@@ -126,13 +126,45 @@ class TodoViewModelModel {
         }
     }
     
+//    func toggleTodoCompletion(todo: TodoItemModel) {
+//        Task {
+//            do {
+//                var updatedTodo = todo
+//                updatedTodo.isCompleted.toggle()
+//                try await repository.updateTodo(updatedTodo)
+//                await fetchTodos()
+//            } catch {
+//                todosUpdated?(.failure(error))
+//            }
+//        }
+//    }
+    
     func toggleTodoCompletion(todo: TodoItemModel) {
         Task {
             do {
                 var updatedTodo = todo
                 updatedTodo.isCompleted.toggle()
                 try await repository.updateTodo(updatedTodo)
+                
+                // Remove the task from the previous list and add it to the new list
+                if updatedTodo.isCompleted {
+                    pendingTodos.removeAll { $0.id == updatedTodo.id }
+                    completedTodos.append(updatedTodo)
+                } else {
+                    completedTodos.removeAll { $0.id == updatedTodo.id }
+                    pendingTodos.append(updatedTodo)
+                }
+                
+                // Sort the lists by creation date
+                pendingTodos.sort { $0.createdAt > $1.createdAt }
+                completedTodos.sort { $0.createdAt > $1.createdAt }
+                
+                // Update the main todos list
+                todos = pendingTodos + completedTodos
+                
                 await fetchTodos()
+                
+                todosUpdated?(.success(()))
             } catch {
                 todosUpdated?(.failure(error))
             }
@@ -193,6 +225,8 @@ class ViewController: UIViewController {
         table.delegate = self
         table.dataSource = self
         table.translatesAutoresizingMaskIntoConstraints = false
+        table.estimatedRowHeight = 100
+        table.rowHeight = UITableView.automaticDimension
         return table
     }()
     
@@ -297,14 +331,19 @@ extension ViewController: UITableViewDataSource {
         let todo = indexPath.section == 0 ? viewModel.pendingTodos[indexPath.row] : viewModel.completedTodos[indexPath.row]
         
         cell.textLabel?.text = todo.title
+        cell.textLabel?.numberOfLines = 0
         cell.textLabel?.textColor = todo.isCompleted ? .systemGray : .label
-        cell.textLabel?.strikeThrough = todo.isCompleted
+        cell.textLabel?.attributedText = todo.isCompleted ? NSAttributedString(string: todo.title, attributes: [.strikethroughStyle: NSUnderlineStyle.single.rawValue]) : NSAttributedString(string: todo.title, attributes: [.strikethroughStyle: nil])
+
+
+        
         print("iscompleted", todo.isCompleted)
         
         return cell
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        
         return section == 0 ? "Pending Tasks" : "Completed Tasks"
     }
 }

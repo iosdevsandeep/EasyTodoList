@@ -39,7 +39,6 @@ class TodoViewModel {
         updatedTodo.isCompleted.toggle()
         repository.updateTodo(updatedTodo)
         
-        
         // Remove the task from the previous list and add it to the new list
         if updatedTodo.isCompleted {
             pendingTodos.removeAll { $0.id == updatedTodo.id }
@@ -58,38 +57,6 @@ class TodoViewModel {
        
         fetchTodos()
     }
-    
-//    func toggleTodoCompletion(todo: TodoItem) {
-//        Task {
-//            do {
-//                var updatedTodo = todo
-//                updatedTodo.isCompleted.toggle()
-//                try await repository.updateTodo(updatedTodo)
-//                
-//                // Remove the task from the previous list and add it to the new list
-//                if updatedTodo.isCompleted {
-//                    pendingTodos.removeAll { $0.id == updatedTodo.id }
-//                    completedTodos.append(updatedTodo)
-//                } else {
-//                    completedTodos.removeAll { $0.id == updatedTodo.id }
-//                    pendingTodos.append(updatedTodo)
-//                }
-//                
-//                // Sort the lists by creation date
-//                pendingTodos.sort { $0.id > $1.id }
-//                completedTodos.sort { $0.id > $1.id }
-//                
-//                // Update the main todos list
-//                todos = pendingTodos + completedTodos
-//                
-////                fetchTodos()
-////                todosUpdated?(.success(()))
-//            } catch {
-//                p
-////                todosUpdated?(.failure(error))
-//            }
-//        }
-//    }
     
     func deleteTodo(todo: TodoItem) {
         repository.removeTodo(todo)

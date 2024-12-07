@@ -118,6 +118,7 @@ extension TodoViewController: UITableViewDelegate {
         if editingStyle == .delete {
             let todo = indexPath.section == 0 ? viewModel.pendingTodos[indexPath.row] : viewModel.completedTodos[indexPath.row]
             viewModel.deleteTodo(todo: todo)
+            viewModel.toggleTodoCompletion(todo: todo)
         }
     }
     
